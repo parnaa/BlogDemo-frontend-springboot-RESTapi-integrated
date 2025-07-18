@@ -14,6 +14,7 @@ import CreateBlog from './components/blog/CreateBlog';
 import Chat from './components/chat/Chat';
 import Notifications from './components/notifications/Notifications';
 import TestConnection from './components/test/TestConnection';
+import PublicBlogTest from './components/test/PublicBlogTest';
 import AuthDebug from './components/debug/AuthDebug';
 import './App.css';
 
@@ -103,6 +104,18 @@ function App() {
                   <Navbar />
                   <div className="main-content">
                     <TestConnection />
+                  </div>
+                </div>
+              } 
+            />
+            
+            {/* Public Blog Test Route */}
+            <Route 
+              path="/test-public" 
+              element={
+                <div>
+                  <div className="main-content">
+                    <PublicBlogTest />
                   </div>
                 </div>
               } 

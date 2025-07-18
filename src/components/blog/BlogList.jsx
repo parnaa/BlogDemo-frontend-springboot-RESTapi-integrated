@@ -31,12 +31,19 @@ const BlogList = ({ isPublic = false, onBlogClick }) => {
     try {
       setLoading(true);
       
+      console.log('🔍 BlogList: Starting fetchBlogs');
+      console.log('  isPublic:', isPublic);
+      
       // Use different API endpoints based on isPublic prop
       let blogs;
       if (isPublic) {
+        console.log('🌍 BlogList: Calling getPublicBlogs()');
         blogs = await blogAPI.getPublicBlogs();
+        console.log('✅ BlogList: getPublicBlogs() returned:', blogs);
       } else {
+        console.log('🔒 BlogList: Calling getMyBlogs()');
         blogs = await blogAPI.getMyBlogs();
+        console.log('✅ BlogList: getMyBlogs() returned:', blogs);
       }
       
       // Filter and sort blogs on the frontend since the API doesn't support pagination
@@ -45,8 +52,8 @@ const BlogList = ({ isPublic = false, onBlogClick }) => {
       // Apply search filter
       if (searchTerm) {
         filteredBlogs = filteredBlogs.filter(blog =>
-          blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          blog.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (blog.title && blog.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (blog.content && blog.content.toLowerCase().includes(searchTerm.toLowerCase())) ||
           (blog.user?.username || blog.author || '').toLowerCase().includes(searchTerm.toLowerCase())
         );
       }
@@ -54,7 +61,7 @@ const BlogList = ({ isPublic = false, onBlogClick }) => {
       // Apply sorting
       switch (sortBy) {
         case 'title':
-          filteredBlogs.sort((a, b) => a.title.localeCompare(b.title));
+          filteredBlogs.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
           break;
         case 'author':
           filteredBlogs.sort((a, b) => 
@@ -75,11 +82,15 @@ const BlogList = ({ isPublic = false, onBlogClick }) => {
       setBlogs(paginatedBlogs);
       setTotalPages(Math.ceil(filteredBlogs.length / 10));
     } catch (error) {
-      console.error('Error fetching blogs:', error);
+      console.error('❌ BlogList: Error fetching blogs:', error);
+      console.error('  Error name:', error.name);
+      console.error('  Error message:', error.message);
+      console.error('  Error stack:', error.stack);
+      console.error('  isPublic was:', isPublic);
       
       // Fallback to mock data if backend is not available
-      if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
-        console.log('Backend not available, using mock blogs');
+      if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error') || error.message.includes('Failed to fetch')) {
+        console.log('📡 BlogList: Backend connection issue, using mock blogs');
         const mockBlogs = [
           {
             id: 1,
@@ -126,6 +137,7 @@ const BlogList = ({ isPublic = false, onBlogClick }) => {
   };
 
   const truncateContent = (content, maxLength = 200) => {
+    if (!content) return '';
     if (content.length <= maxLength) return content;
     return content.substring(0, maxLength) + '...';
   };
@@ -210,7 +222,7 @@ const BlogList = ({ isPublic = false, onBlogClick }) => {
             >
               {blog.imageUrl && (
                 <div className="blog-image">
-                  <img src={blog.imageUrl} alt={blog.title} />
+                  <img src={blog.imageUrl} alt={blog.title || 'Blog image'} />
                 </div>
               )}
               
@@ -222,10 +234,10 @@ const BlogList = ({ isPublic = false, onBlogClick }) => {
                   </span>
                 </div>
                 
-                <h3 className="blog-title">{blog.title}</h3>
+                <h3 className="blog-title">{blog.title || 'Untitled Blog'}</h3>
                 
                 <p className="blog-excerpt">
-                  {truncateContent(blog.content)}
+                  {truncateContent(blog.content || '')}
                 </p>
                 
                 <div className="blog-tags">

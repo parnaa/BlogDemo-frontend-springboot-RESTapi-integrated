@@ -140,29 +140,89 @@ export const authAPI = {
 // Blog API calls
 export const blogAPI = {
   // Public blog operations (no auth required)
-  getPublicBlogs: () => {
+  getPublicBlogs: async () => {
     console.log('📚 Getting public blogs (no auth)');
-    return apiRequest(`${API_BASE_URL}/blogs/public`);
+    console.log('  URL:', `${API_BASE_URL}/blogs/public`);
+    
+    try {
+      // Simple fetch without any headers for public endpoint
+      const response = await fetch(`${API_BASE_URL}/blogs/public`);
+      
+      console.log('📥 Public blogs response:');
+      console.log('  Status:', response.status);
+      console.log('  Status text:', response.statusText);
+      console.log('  Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        console.error('❌ Public blogs request failed:');
+        console.error('  Status:', response.status);
+        console.error('  Status text:', response.statusText);
+        throw new Error(`Public API Error: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ Public blogs request successful:', data);
+      return data;
+    } catch (fetchError) {
+      console.error('❌ Fetch error in getPublicBlogs:', fetchError);
+      console.error('  Error name:', fetchError.name);
+      console.error('  Error message:', fetchError.message);
+      throw fetchError;
+    }
   },
   
-  getPublicBlogById: (id) => {
+  getPublicBlogById: async (id) => {
     console.log('📚 Getting public blog by ID:', id);
-    return apiRequest(`${API_BASE_URL}/blogs/public/${id}`);
+    console.log('  URL:', `${API_BASE_URL}/blogs/public/${id}`);
+    
+    // Simple fetch without any headers for public endpoint
+    const response = await fetch(`${API_BASE_URL}/blogs/public/${id}`);
+    
+    console.log('📥 Public blog response:');
+    console.log('  Status:', response.status);
+    console.log('  Status text:', response.statusText);
+    
+    if (!response.ok) {
+      console.error('❌ Public blog request failed:');
+      console.error('  Status:', response.status);
+      throw new Error(`Public API Error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('✅ Public blog request successful:', data);
+    return data;
   },
   
-  getPublicBlogsByUser: (username) => {
+  getPublicBlogsByUser: async (username) => {
     console.log('📚 Getting public blogs by user:', username);
-    return apiRequest(`${API_BASE_URL}/blogs/public/user/${username}`);
+    console.log('  URL:', `${API_BASE_URL}/blogs/public/user/${username}`);
+    
+    // Simple fetch without any headers for public endpoint
+    const response = await fetch(`${API_BASE_URL}/blogs/public/user/${username}`);
+    
+    console.log('📥 Public blogs by user response:');
+    console.log('  Status:', response.status);
+    console.log('  Status text:', response.statusText);
+    
+    if (!response.ok) {
+      console.error('❌ Public blogs by user request failed:');
+      console.error('  Status:', response.status);
+      throw new Error(`Public API Error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('✅ Public blogs by user request successful:', data);
+    return data;
   },
   
   getAllBlogs: () => {
     console.log('📚 Getting all blogs (alias for public)');
-    return apiRequest(`${API_BASE_URL}/blogs/public`);
+    return blogAPI.getPublicBlogs();
   }, // Alias for public blogs
   
   getBlogsByUser: (username) => {
     console.log('📚 Getting blogs by user (alias):', username);
-    return apiRequest(`${API_BASE_URL}/blogs/public/user/${username}`);
+    return blogAPI.getPublicBlogsByUser(username);
   }, // Alias for compatibility
   
   // Protected blog operations (require authentication)

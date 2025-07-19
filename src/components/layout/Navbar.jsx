@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
@@ -18,9 +18,24 @@ import {
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef(null);
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = async () => {
     console.log('🚪 Navbar: Logout button clicked');
@@ -35,15 +50,16 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const navigationItems = [
-    { path: '/blogs', label: 'Public Blogs', icon: BookOpen },
+    { path: '/public-blogs', label: 'All Blogs', icon: BookOpen },
+    { path: '/blogs', label: 'My BlogS', icon: BookOpen },
     { path: '/dashboard', label: 'Dashboard', icon: BarChart3, requiresAuth: true },
     { path: '/chat', label: 'Chat', icon: MessageCircle, requiresAuth: true },
     { path: '/notifications', label: 'Notifications', icon: Bell, requiresAuth: true },
   ];
 
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
+    <nav className="navbar" style={{ overflow: 'visible' }}>
+      <div className="navbar-container" style={{ overflow: 'visible' }}>
         <div className="navbar-brand">
           <Link to="/" className="brand-link">
             <BookOpen size={24} />
@@ -78,7 +94,7 @@ const Navbar = () => {
         </div>
 
         {/* User Menu */}
-        <div className="navbar-user">
+        <div className="navbar-user" style={{ position: 'relative', overflow: 'visible' }}>
           {user ? (
             <>
               <button 
@@ -89,7 +105,7 @@ const Navbar = () => {
                 <span>Create</span>
               </button>
               
-              <div className="user-menu">
+              <div className="user-menu" style={{ position: 'relative', overflow: 'visible' }} ref={userMenuRef}>
                 <button 
                   className="user-avatar"
                   onClick={() => setShowUserMenu(!showUserMenu)}
@@ -99,8 +115,36 @@ const Navbar = () => {
                 </button>
                 
                 {showUserMenu && (
-                  <div className="user-dropdown">
-                    <button onClick={handleLogout} className="dropdown-item logout">
+                  <div 
+                    className="user-dropdown"
+                    style={{
+                      position: 'fixed',
+                      top: '60px',
+                      right: '20px',
+                      zIndex: 99999,
+                      backgroundColor: 'white',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      minWidth: '120px',
+                      padding: '4px 0'
+                    }}
+                  >
+                    <button 
+                      onClick={handleLogout} 
+                      className="dropdown-item logout"
+                      style={{
+                        width: '100%',
+                        padding: '8px 16px',
+                        border: 'none',
+                        background: 'transparent',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
                       <LogOut size={16} />
                       Logout
                     </button>
